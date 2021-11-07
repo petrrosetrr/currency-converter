@@ -1,0 +1,9 @@
+
+.main {
+    height: 90%;
+    .list {
+        margin-top: 0;
+        overflow-y: scroll;
+        flex-grow: 1;
+    }
+}

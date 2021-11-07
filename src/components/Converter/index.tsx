@@ -3,6 +3,7 @@ import {Button, Container, Dropdown, Icon, Input, Label} from 'semantic-ui-react
 import styles from './index.module.scss';
 import {useAppDispatch, useAppSelector} from '../../redux/store';
 import {setAmount, fetchBaseCurrency, setTargetCurrency, switchCurrencies} from '../../redux/appSlice';
+import AppContainer from "../AppContainer";
 
 const Converter = () => {
     const dispatch = useAppDispatch();
@@ -22,8 +23,9 @@ const Converter = () => {
             return [];
         }
     }, [data]);
+
     return (
-        <section className={styles.main}>
+        <AppContainer className={styles.main}>
             <Container as={'h1'} textAlign={'center'}>
                 Currency converter
             </Container>
@@ -64,7 +66,7 @@ const Converter = () => {
                     data?.data[targetCurrency] && amount ? ((data?.data[targetCurrency]) * parseFloat(amount)).toFixed(2) : ''
                 }
             </Label>
-        </section>
+        </AppContainer>
     );
 };
 
