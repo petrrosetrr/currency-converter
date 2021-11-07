@@ -1,6 +1,5 @@
 import React, {ChangeEvent, useMemo} from 'react';
 import {Button, Container, Dropdown, Icon, Input, Label} from 'semantic-ui-react';
-import styles from './index.module.scss';
 import {useAppDispatch, useAppSelector} from '../../redux/store';
 import {setAmount, fetchBaseCurrency, setTargetCurrency, switchCurrencies} from '../../redux/appSlice';
 import AppContainer from "../AppContainer";
@@ -14,7 +13,7 @@ const Converter = () => {
     }
     const options = useMemo(() => {
         if (data?.data) {
-            return Object.keys(data.data).map((currency, index) => ({
+            return Object.keys(data.data).map((currency) => ({
                 key: currency,
                 value: currency,
                 text: currency,
@@ -25,7 +24,7 @@ const Converter = () => {
     }, [data]);
 
     return (
-        <AppContainer className={styles.main}>
+        <AppContainer>
             <Container as={'h1'} textAlign={'center'}>
                 Currency converter
             </Container>
@@ -42,7 +41,7 @@ const Converter = () => {
                 selection
                 value={data?.query.base_currency}
                 options={options}
-                disabled={loading}
+                loading={loading}
                 onChange={(e, {value}) => dispatch(fetchBaseCurrency(value as string))}
             >
             </Dropdown>
@@ -66,6 +65,19 @@ const Converter = () => {
                     data?.data[targetCurrency] && amount ? ((data?.data[targetCurrency]) * parseFloat(amount)).toFixed(2) : ''
                 }
             </Label>
+            {
+                error &&
+                <>
+                    <Button
+                        negative
+                        fluid
+                        onClick={() => dispatch(fetchBaseCurrency('USD'))}>
+                        Try again
+                    </Button>
+                    <Container textAlign={'center'} as={'p'}>{error}</Container>
+                </>
+
+            }
         </AppContainer>
     );
 };

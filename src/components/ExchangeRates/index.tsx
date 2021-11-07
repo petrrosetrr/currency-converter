@@ -6,7 +6,7 @@ import CurrencyFlagImage from "react-currency-flags";
 import AppContainer from "../AppContainer";
 
 const ExchangeRates = () => {
-    const {data, loading, error} = useAppSelector(state => state.app);
+    const {data} = useAppSelector(state => state.app);
 
     return (
         <AppContainer className={styles.main}>
@@ -17,7 +17,6 @@ const ExchangeRates = () => {
 
             }
             <Container textAlign={'center'}>Base currency: {data?.query.base_currency}</Container>
-            <Loader inverted content='Loading' size={'large'} />
             <Segment as={List} animated size={'large'} divided relaxed className={styles.list}>
                 {
                     data ? Object.keys(data.data).map(currency =>
