@@ -1,6 +1,8 @@
 
 .main {
-    width: 40%;
+    width: 100%;
+    max-width: 700px;
+    min-width: 320px;
     display: flex;
     flex-direction: column;
     gap: 15px;

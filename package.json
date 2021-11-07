@@ -14,6 +14,7 @@
     "@types/react-dom": "^17.0.11",
     "axios": "^0.24.0",
     "classnames": "^2.3.1",
+    "currency-flags": "^3.2.1",
     "gh-pages": "^3.2.3",
     "locale-currency": "^0.0.2",
     "nanoid": "^3.1.30",
@@ -32,7 +33,7 @@
   "scripts": {
     "predeploy": "npm run build",
     "deploy": "gh-pages -d build",
-    "start": "set NODE_ENV='development' && react-scripts start",
+    "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"

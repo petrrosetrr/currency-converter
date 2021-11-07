@@ -1,45 +1,69 @@
-import React from 'react';
-import {Button, Container, Dropdown, Icon, Input} from "semantic-ui-react";
+import React, {ChangeEvent, useMemo} from 'react';
+import {Button, Container, Dropdown, Icon, Input, Label} from 'semantic-ui-react';
 import styles from './index.module.scss';
-
-const currencyOptions: any = [
-    { key: 'af', value: 'af', flag: 'af', text: 'Afghanistan' },
-]
+import {useAppDispatch, useAppSelector} from '../../redux/store';
+import {setAmount, fetchBaseCurrency, setTargetCurrency, switchCurrencies} from '../../redux/appSlice';
 
 const Converter = () => {
+    const dispatch = useAppDispatch();
+    const {amount, data, loading, error, targetCurrency} = useAppSelector(state => state.app);
+
+    const inputHandler = (e: ChangeEvent<HTMLInputElement>) => {
+            dispatch(setAmount(e.target.value));
+    }
+    const options = useMemo(() => {
+        if (data?.data) {
+            return Object.keys(data.data).map((currency, index) => ({
+                key: currency,
+                value: currency,
+                text: currency,
+            }))
+        } else {
+            return [];
+        }
+    }, [data]);
     return (
         <section className={styles.main}>
             <Container as={'h1'} textAlign={'center'}>
                 Currency converter
             </Container>
             <Input
+                value={amount}
+                onChange={inputHandler}
                 icon={'money'}
                 label={'Amount'}
                 fluid/>
             <Dropdown
-                additionLabel={'add'}
-                clearable
-                label={'From'}
-                placeholder='Select currency'
+                placeholder={'Select base currency'}
                 fluid
                 search
                 selection
-                options={currencyOptions}
-            />
-            <Button>
+                value={data?.query.base_currency}
+                options={options}
+                disabled={loading}
+                onChange={(e, {value}) => dispatch(fetchBaseCurrency(value as string))}
+            >
+            </Dropdown>
+            <Button onClick={() => dispatch(switchCurrencies())}>
                 <Icon name={'arrow up'} />
                 <Icon name={'arrow down'} />
             </Button>
             <Dropdown
-                clearable
-                label={'From'}
-                placeholder={'Select currency'}
+                placeholder={'Select target currency'}
                 fluid
                 search
                 selection
-                options={currencyOptions}
+                value={targetCurrency}
+                options={options}
+                disabled={loading}
+                onChange={(e, {value}) => dispatch(setTargetCurrency(value as string))}
             />
-            <Input label='Total' disabled/>
+            <Label size={'big'} color={'teal'}>
+                {'Total: '}
+                {
+                    data?.data[targetCurrency] && amount ? ((data?.data[targetCurrency]) * parseFloat(amount)).toFixed(2) : ''
+                }
+            </Label>
         </section>
     );
 };

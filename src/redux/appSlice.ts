@@ -1,31 +1,42 @@
 import {createAsyncThunk, createSlice, PayloadAction} from "@reduxjs/toolkit";
 import {api, ICurrencyData} from "../api";
-import {RootState} from "./store";
-import {AxiosError} from "axios";
+import {RootState, AppDispatch} from './store';
 import localeCurrency from "locale-currency";
 
 interface IConverterSlice {
-    amount: number;
+    amount: string;
     loading: boolean;
-    error: string | undefined;
-    base: string;
-    target: string;
-    data: ICurrencyData | undefined;
+    error: string | null;
+    targetCurrency: string;
+    data: ICurrencyData | null;
 }
 
 const initialState: IConverterSlice = {
-    amount: 10,
+    amount: '10.23',
     loading: false,
-    error: undefined,
-    base: localeCurrency.getCurrency(window.navigator.language),
-    target: localeCurrency.getCurrency(window.navigator.language) === 'USD' ? 'RUB' : 'USD',
-    data: undefined,
+    error: null,
+    targetCurrency: localeCurrency.getCurrency(window.navigator.language) === 'USD' ? 'RUB' : 'USD',
+    data: null,
 }
 
-export const fetchData = createAsyncThunk<ICurrencyData, void, {state: RootState, rejectValue: AxiosError}>(
+export const fetchBaseCurrency = createAsyncThunk<ICurrencyData, string, {state: RootState, dispatch: AppDispatch}>(
+    'app/fetchBaseCurrency',
+    async (arg) => {
+        const data = await api.getLatest(arg);
+        data.data[arg] = 1;
+        return data;
+    }
+);
+
+export const switchCurrencies = createAsyncThunk<unknown, void, {state: RootState, dispatch: AppDispatch}>(
     'app/fetchData',
-    async (arg, {getState}) => {
-        return await api.getLatest(getState().app.base);
+    async (arg, {getState, dispatch}) => {
+        const {targetCurrency, data} = getState().app;
+        const baseCurrency = data?.query.base_currency;
+        if (baseCurrency) {
+            await dispatch(fetchBaseCurrency(targetCurrency));
+            dispatch(setTargetCurrency(baseCurrency));
+        }
     }
 );
 
@@ -33,32 +44,31 @@ export const appSlice = createSlice({
     name: 'app',
     initialState,
     reducers: {
-        setBaseCurrency (state, action: PayloadAction<string>) {
-            state.base = action.payload;
-        },
         setTargetCurrency (state, action: PayloadAction<string>) {
-            state.target = action.payload;
+            state.targetCurrency = action.payload;
         },
-        setData (state, action: PayloadAction<ICurrencyData>) {
-            state.data = action.payload;
+        setAmount (state, {payload}: PayloadAction<string>) {
+            if (payload.match(/^[0-9]*[.]?[0-9]*$/g)) {
+                state.amount = payload;
+            }
         }
     },
         extraReducers: (builder) => {
             builder
-                .addCase(fetchData.fulfilled, (state, action) => {
+                .addCase(fetchBaseCurrency.fulfilled, (state, action) => {
                     state.data = action.payload;
                     state.loading = false;
                 })
-                .addCase(fetchData.pending, state => {
+                .addCase(fetchBaseCurrency.pending, state => {
                     state.loading = true;
-                    state.error = undefined;
+                    state.error = null;
                 })
-                .addCase(fetchData.rejected, (state, action) => {
+                .addCase(fetchBaseCurrency.rejected, (state, {error}) => {
                     state.loading = false;
-                    console.log(action);
+                    state.error = error.message || 'Something went wrong :(';
                 })
         }
 });
 
-export const {setBaseCurrency, setTargetCurrency, setData} = appSlice.actions;
+export const {setTargetCurrency, setAmount} = appSlice.actions;
 export default appSlice.reducer;
